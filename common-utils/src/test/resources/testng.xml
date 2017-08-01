@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="plan-project-test">
+	<test name="plan-project-test">
+		<packages>
+			<package name="org.easyolap.test" />
+		</packages>
+	</test>
+</suite>

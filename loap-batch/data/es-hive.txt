@@ -1,0 +1,72 @@
+http://10.3.14.4:9200/_sql?sql=select * from vehicle2 limit 10
+http://10.3.14.4:9200/_sql?sql=select * from vehicle2 where SOC>90 limit 10
+http://10.3.14.4:9200/_sql?sql=select * from vehicle2 where SOC>5 and SOC<100 limit 10    -- no 
+
+
+
+
+
+:切到hive用户下，进入hive环境
+su - hive
+hive   
+
+
+hive
+
+add jar /usr/hdp/2.4.3.0-227/hive/bin/auxlib/elasticsearch-hadoop-5.1.1.jar;
+add jar /usr/hdp/2.4.3.0-227/hive/bin/auxlib/commons-httpclient-3.1.jar;
+
+DROP TABLE IF EXISTS vehicle2;
+create external table vehicle2 (
+id string,
+sendingTime string,
+SOC1 float,
+mileage float
+)
+stored by 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+tblproperties(
+'es.nodes' = '10.3.14.4:9200',
+'es.resource' = 'vehicle2/realtime',
+'es.read.metadata' = 'true',
+'es.index.auto.create' = 'false',
+'es.mapping.names' = 'id:_metadata._id, sendingTime:sendingTime, SOC1:SOC'
+);
+
+# include
+es.mapping.include = u*, foo.*
+# exclude
+es.mapping.exclude = *.description
+
+
+select * from vehicle2 limit 10;
+ 
+select * from vehicle2 where SOC1 > 20 and soc1<30 limit 10;
+select count(1) from vehicle2;
+select * from vehicle2 where SOC1 <0 limit 10;
+
+
+select id ,count(1) from vehicle2 group by id;
+
+ show create table vehicle2
+
+查看集群状态：
+
+　　curl -XGET 'http://master:9200/_cluster/health'
+
+　　　　或者
+
+　　curl -XGET 'http://localhost:9200/_cluster/health'
+
+Elasticsearch之curl创建索引库
+curl -XPUT 'http://192.168.80.200:9200/zhouls'
+curl -XPOST 'http://192.168.80.200:9200/zhouls1'
+删除
+curl -XDELETE 'http://10.3.14.4:9200/vehicle2'
+
+
+java hive
+add jar to hivelib ; example cp /usr/hdp/2.4.3.0-227/hive/bin/auxlib/*.jar /usr/hdp/2.4.3.0-227/hive/lib/
+
+
+hive Elasticsearch  Type conversion
+https://www.elastic.co/guide/en/elasticsearch/hadoop/current/hive.html

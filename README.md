@@ -12,6 +12,15 @@ Easyolap:是一个基于Hadoop分布式架构下的实时的、多维的、交�
 Easyolap 为大数据而生，为大数据分析与即席分析而设计
 
 Easyolap即席查询（Ad Hoc）是用户根据自己的需求，灵活的选择查询条件，系统能够根据用户的选择生成相应的统计报表。即席查询与普通应用查询最大的不同是普通的应用查询是定制开发的，而即席查询是由用户自定义查询条件的。
+Easyolap采用索引技术, 在海量的数据中进行数据分类整理，原理类似字典，通过目录可以快速到相关数据，避免了全量数据的扫描，从而提升查询速度。
+
+
+
+使用索引后有什么好处？
+* 索引技术大幅度的加快数据的检索速度。
+* 索引技术可以显著减少查询中分组、统计和排序的时间。
+* 索引技术大幅度的提高系统的性能和响应时间，从而节约资源。
+
 
 ##Easyolap有哪些功能？
 ----
@@ -23,7 +32,7 @@ Easyolap即席查询（Ad Hoc）是用户根据自己的需求，灵活的选择
 在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流
 
 * 邮件(surpass_li#gmail.com, 把#换成@)
-* QQ群: 452743094
+* QQ群:452743094
 * 微信:s46488820
 * 
 
@@ -36,9 +45,33 @@ Easyolap即席查询（Ad Hoc）是用户根据自己的需求，灵活的选择
 
 ##Easyolap特性：
 ----
-*稳定；
-*可靠；
-*易用
+* 稳定；
+* 可靠；
+* 易用
+
+##Easyolap技术框架：
+----
+* 消息中间件：KAFKA
+* ETL组件：bin2json
+* 搜索引擎：elasticsearch5.1.1
+* 大数据存储：hbase;cassandra3
+* 查询接口：hive
+* rest api: vert.x ; akka; 
+* GATEWAY Api: kong
+* 大数据平台：HDP：hadoop+sprk+hbase(可选)+hive
+
+##Easyolap里程碑：
+----
+* 2017-07-25 完成maven模块的搭建
+* 2017-07-28 完成util模块抽取
+* 2017-07-28 完成elasticsearch+beam+spark读取文本文件到elasticsearch进行索引
+* 2017-07-31 完成elasticsearch与hive集成和测试
+
+
+
+##Easyolap遇到的坑：
+* jar版本冲突：jacksong与calcite-avatica冲突，在hive-exec中对其进行排除
+* 
 
 ##感激
 ----
