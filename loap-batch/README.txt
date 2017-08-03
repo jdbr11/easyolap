@@ -26,6 +26,14 @@ spark-submit --class org.easyloap.batch.ReadHbase2ElasticsearchPipeline --master
 
 spark-submit --name OnlineTimeStatisticsPipeline --conf "spark.executor.extraJavaOptions=-Dlog4j.configuration=file:/home/spark/log4j-executor.properties" --class org.easyolap.bigdata.batch.OnlineTimeStatisticsPipeline --master yarn-client --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
 
+##从广义上讲，yarn-cluster适用于生产环境；而yarn-client适用于交互和调试，也就是希望快速地看到application的输出。
+
+spark-submit --name Text2ElasticsearchPipeline  --class org.easyolap.bigdata.batch.Text2ElasticsearchPipeline --master yarn --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
+
+
+spark-submit --name Text2ElasticsearchPipeline  --class org.easyolap.bigdata.batch.Text2ElasticsearchPipeline --master yarn-client --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
+
+
 
   
 --spark kafka 2 es
@@ -34,7 +42,10 @@ spark-submit --name kafka2es --class org.easyloap.batch.Kafka2ElasticsearchPipel
 --spark standalone集群
 
 spark-submit --name kafka2es --class org.easyloap.batch.Kafka2ElasticsearchPipeline --master spark://spark.easyolap.com:7077 olap-batch-1.0.jar --runner=org.apache.beam.runners.spark.SparkRunner
+spark-submit --name Text2ElasticsearchPipeline  --class org.easyloap.batch.Text2ElasticsearchPipeline --master spark://127.0.1.1:7077 olap-batch-1.0.jar --runner=SparkRunner 
 
+
+spark-submit --name Text2ElasticsearchPipeline  --class org.easyloap.batch.Text2ElasticsearchPipeline --master spark://127.0.1.1:7077  olap-batch-1.0-jar-with-dependencies.jar --runner=SparkRunner --inputFile=test.txt
 
 查看日志
   yarn logs -applicationId  application id 

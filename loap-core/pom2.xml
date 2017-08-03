@@ -28,6 +28,23 @@
             <type>jar</type>
         </dependency>
         
+         <dependency>  
+            <groupId>com.fasterxml.jackson.core</groupId>  
+            <artifactId>jackson-core</artifactId>  
+        </dependency>  
+        <dependency>  
+            <groupId>com.fasterxml.jackson.core</groupId>  
+            <artifactId>jackson-databind</artifactId>  
+        </dependency>  
+        <dependency>  
+            <groupId>com.fasterxml.jackson.core</groupId>  
+            <artifactId>jackson-annotations</artifactId>  
+        </dependency>  
+        <dependency>  
+            <groupId>com.fasterxml.jackson.module</groupId>  
+            <artifactId>jackson-module-jaxb-annotations</artifactId>  
+        </dependency>  
+        
 
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
@@ -54,7 +71,7 @@
 		</dependency>
 
 
-		<!-- dependency>
+		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch-hadoop-hive</artifactId>
 		</dependency>
@@ -82,7 +99,7 @@
 					<artifactId>calcite-avatica</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency-->
+		</dependency>
 
 
 

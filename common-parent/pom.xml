@@ -27,7 +27,7 @@
 		<hbase.version>1.3.0</hbase.version>
 		<hbase.guava.version>12.0.1</hbase.guava.version>
 		<hbase.protobuf.version>3.2.0</hbase.protobuf.version>
-		<hadoop.version>2.5.1</hadoop.version>
+		<hadoop.version>2.7.1.2.4.3.0-227</hadoop.version>
 		<derby.version>10.12.1.1</derby.version>
 
 		<scala.version>2.10.2</scala.version>
@@ -156,8 +156,8 @@
 				<groupId>org.apache.beam</groupId>
 				<artifactId>beam-runners-core-java</artifactId>
 				<version>${beam.version}</version>
-				<classifier>tests</classifier>
-				<scope>test</scope>
+				<!--classifier>tests</classifier>
+				<scope>test</scope-->
 			</dependency>
 			<dependency>
 				<groupId>org.apache.beam</groupId>
@@ -421,14 +421,31 @@
 				<groupId>org.apache.beam</groupId>
 				<artifactId>beam-runners-spark</artifactId>
 				<version>${beam.version}</version>
-				<scope>runtime</scope>
+				<!--scope>runtime</scope-->
 			</dependency>
+			<dependency>
+					<groupId>org.apache.beam</groupId>
+					<artifactId>beam-sdks-java-io-hadoop-common</artifactId>
+					<version>${beam.version}</version>
+				</dependency>
 			<dependency>
 				<groupId>org.apache.beam</groupId>
 				<artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
 				<version>${beam.version}</version>
-				<scope>runtime</scope>
+				<!--scope>runtime</scope-->
 			</dependency>
+			 <dependency>
+        <groupId>org.apache.beam</groupId>
+        <artifactId>beam-sdks-java-io-hadoop-input-format</artifactId>
+        <version>${beam.version}</version>
+    </dependency>
+    
+			<dependency>
+  <groupId>org.apache.spark</groupId>
+  <artifactId>spark-core_2.10</artifactId>
+  <version>${spark.version}</version>
+</dependency>
+
 			<dependency>
 				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-streaming_2.10</artifactId>
@@ -445,7 +462,7 @@
 				<groupId>com.fasterxml.jackson.module</groupId>
 				<artifactId>jackson-module-scala_2.10</artifactId>
 				<version>${jackson.version}</version>
-				<scope>runtime</scope>
+				<!--scope>runtime</scope-->
 			</dependency>
 			<dependency>
 				<groupId>org.scala-lang</groupId>
@@ -619,7 +636,7 @@
 					</executions>
 				</plugin>
 
-				<plugin>
+				<!--plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
 					<version>2.4</version>
@@ -628,7 +645,6 @@
 							<manifest>
 								<addClasspath>true</addClasspath>
 								<classpathPrefix>lib/</classpathPrefix>
-								<mainClass>com.reach.automotive.start.Start</mainClass>
 							</manifest>
 						</archive>
 						<excludes>
@@ -636,7 +652,7 @@
 							<exclude>*.properties</exclude>
 						</excludes>
 					</configuration>
-				</plugin>
+				</plugin-->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
@@ -680,7 +696,17 @@
 					<artifactId>maven-shade-plugin</artifactId>
 					<version>1.4</version>
 					<configuration>
-						<createDependencyReducedPom>true</createDependencyReducedPom>
+						<createDependencyReducedPom>false</createDependencyReducedPom>
+						<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
 					</configuration>
 					<executions>
 						<execution>

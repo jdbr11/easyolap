@@ -25,7 +25,9 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.UnmappedTerms;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -36,7 +38,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 
 /**
  * ClassName:EsClentTest <br/>
@@ -83,7 +84,7 @@ public class EsClentSearch {
             client.close();
     }
 
-    // @Test
+    @Test
     public void testSearch1() {
         long startTime = System.currentTimeMillis();
         try {
@@ -162,7 +163,7 @@ public class EsClentSearch {
         long endTime = System.currentTimeMillis();
         log.info("testSearch3 use time(ms):" + (endTime - startTime));
     }
-
+    @Test
     public void testAggregation() {
         long startTime = System.currentTimeMillis();
         try {
@@ -179,9 +180,9 @@ public class EsClentSearch {
 
             Map<String, Aggregation> aggMap = sr.getAggregations().asMap();
 
-            StringTerms gradeTerms = (StringTerms) aggMap.get("socAgg");
+            UnmappedTerms gradeTerms = (UnmappedTerms) aggMap.get("socAgg");
 
-            Iterator<Bucket> gradeBucketIt = gradeTerms.getBuckets().iterator();
+            Iterator<Bucket> gradeBucketIt =  gradeTerms.getBuckets().iterator();
 
             while (gradeBucketIt.hasNext()) {
                 Bucket gradeBucket = (Bucket) gradeBucketIt.next();
@@ -195,7 +196,6 @@ public class EsClentSearch {
                     System.out.println(gradeBucket.getKey() + "电量" + classBucket.getKey() + "里程有"
                             + classBucket.getDocCount() + "个。");
                 }
-                System.out.println();
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);

@@ -28,7 +28,8 @@ import com.google.gson.Gson;
 public class Text2ElasticsearchPipeline {
     private static final Gson GSON = new Gson();
     static TransportClient client = EsClient.getInstance().getTransportClient();
-
+    private static final Logger logger = LoggerFactory.getLogger(Text2ElasticsearchPipeline.class);
+    
     public interface Text2EsOptions extends PipelineOptions {
 
         /**
@@ -63,23 +64,21 @@ public class Text2ElasticsearchPipeline {
                 .as(Text2EsOptions.class);
 
         Pipeline p = Pipeline.create(options);
-
+        logger.info("=================="+options.getInputFile());
         p.apply("ReadLines", TextIO.read().from(options.getInputFile()))
-
                 .apply(ParDo.of(
-                        new Result2RecordDataFn(options.getIndexName(), options.getIndexType())));
-
+                        new Lines2InddexFn(options.getIndexName(), options.getIndexType())));
         p.run().waitUntilFinish();
     }
 
-    private static class Result2RecordDataFn extends DoFn<String, String> {
-        private static final Logger logger = LoggerFactory.getLogger(Result2RecordDataFn.class);
+    private static class Lines2InddexFn extends DoFn<String, String> {
+        private static final Logger logger = LoggerFactory.getLogger(Lines2InddexFn.class);
         DecimalFormat df = new DecimalFormat("######0.00");
         private static final long serialVersionUID = 1027809604194458163L;
         private String indexName;
         private String indexType;
 
-        public Result2RecordDataFn(String indexName, String indexType) {
+        public Lines2InddexFn(String indexName, String indexType) {
             this.indexName = indexName;
             this.indexType = indexType;
         }
@@ -90,11 +89,11 @@ public class Text2ElasticsearchPipeline {
 
             logger.info("===+++===value:" + v);
             Map<String, Object> map = GSON.fromJson(v, Map.class);
-            if (map.isEmpty() || !map.containsKey("sendingTime")) {
-                logger.warn("RtmData deserialize error, data is null or sendingTime is null!");
+            if (map==null || map.isEmpty() || !map.containsKey("sendingTime")) {
+                logger.warn("Data deserialize error, data is null or sendingTime is null!");
                 return;
             }
-            for (int i = 0; i < 100000; i++) {
+            for (int i = 0; i < 1000000; i++) {
                 try {
 
                     XContentBuilder builder = jsonBuilder().startObject();
