@@ -25,18 +25,19 @@ mvn exec:java -Dexec.mainClass=org.easyloap.batch.ReadHbase2ElasticsearchPipelin
 
 spark-submit --class path.to.your.Class --master yarn --deploy-mode cluster [options] <app jar> [app options]
 
+spark-submit --name Text2ElasticsearchPipeline1.4 --class org.easyolap.batch.ReadHbase2ElasticsearchPipeline --master yarn-client olap-batch-1.0.jar --runner=SparkRunner 
 
-spark-submit --class org.easyloap.batch.Kafka2ElasticsearchPipeline --master spark://master:18080 target/olap-batch-1.0.jar --runner=SparkRunner
-spark-submit --class org.easyloap.batch.ReadHbase2ElasticsearchPipeline --master yarn --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
+spark-submit --class org.easyolap.batch.Kafka2ElasticsearchPipeline --master spark://master:18080 target/olap-batch-1.0.jar --runner=SparkRunner
+spark-submit --class org.easyolap.batch.ReadHbase2ElasticsearchPipeline --master yarn --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
 
 spark-submit --name OnlineTimeStatisticsPipeline --conf "spark.executor.extraJavaOptions=-Dlog4j.configuration=file:/home/spark/log4j-executor.properties" --class org.easyolap.bigdata.batch.OnlineTimeStatisticsPipeline --master yarn-client --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
 
 ##从广义上讲，yarn-cluster适用于生产环境；而yarn-client适用于交互和调试，也就是希望快速地看到application的输出。
 
-spark-submit --name Text2ElasticsearchPipeline  --class org.easyolap.bigdata.batch.Text2ElasticsearchPipeline --master yarn --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
+spark-submit --name Text2ElasticsearchPipeline  --class org.easyolap.batch.Text2ElasticsearchPipeline --master yarn --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
 
 
-spark-submit --name Text2ElasticsearchPipeline  --class org.easyolap.bigdata.batch.Text2ElasticsearchPipeline --master yarn-client --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
+spark-submit --name Text2ElasticsearchPipeline  --class org.easyolap.batch.Text2ElasticsearchPipeline --master yarn-client --deploy-mode cluster olap-batch-1.0.jar --runner=SparkRunner
 
 
 
