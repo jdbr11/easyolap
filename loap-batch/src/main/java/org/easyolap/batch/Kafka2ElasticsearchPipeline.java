@@ -1,4 +1,4 @@
-package org.easyloap.batch;
+package org.easyolap.batch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.kafka.KafkaIO;
+import org.apache.beam.sdk.options.Default;
+import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.DoFn;
@@ -27,16 +29,11 @@ public class Kafka2ElasticsearchPipeline {
     private static final Gson GSON = new Gson();
     static TransportClient client = EsClient.getInstance().getTransportClient();
 
-    private static String indexName = "vehicle";
-    private static String indexType = "realtime";
-
     public static void main(String[] args) {
         try {
             Kafka2ElasticsearchOptions options = PipelineOptionsFactory.fromArgs(args)
                     .withValidation().as(Kafka2ElasticsearchOptions.class);
-            indexName = options.getIndexName();
-            indexType = options.getIndexType();
-            
+
             Pipeline pipeline = Pipeline.create(options);
             long starTime = System.currentTimeMillis();
             pipeline.apply(KafkaIO.<String, String> read()
@@ -48,7 +45,8 @@ public class Kafka2ElasticsearchPipeline {
                             org.apache.kafka.common.serialization.StringDeserializer.class)
                     .withoutMetadata()
 
-            ).apply(ParDo.of(new Result2RecordDataFn()));
+            ).apply(ParDo
+                    .of(new Result2RecordDataFn(options.getIndexName(), options.getIndexType())));
 
             pipeline.run().waitUntilFinish();
             long endTime = System.currentTimeMillis();
@@ -63,6 +61,13 @@ public class Kafka2ElasticsearchPipeline {
         private static final Logger logger = LoggerFactory.getLogger(Result2RecordDataFn.class);
 
         private static final long serialVersionUID = 1027809604194458163L;
+        private String indexName;
+        private String indexType;
+
+        public Result2RecordDataFn(String indexName, String indexType) {
+            this.indexName = indexName;
+            this.indexType = indexType;
+        }
 
         @ProcessElement
         public void processElement(ProcessContext c) {
@@ -97,7 +102,7 @@ public class Kafka2ElasticsearchPipeline {
                         builder.field(key, entry.getValue());
                     }
                 }
-                if(vin==null || vin.length()==0){
+                if (vin == null || vin.length() == 0) {
                     vin = (String) map.get("clientId");
                 }
                 builder.endObject();
@@ -127,10 +132,18 @@ public class Kafka2ElasticsearchPipeline {
     }
 
     public interface Kafka2ElasticsearchOptions extends PipelineOptions {
-        
+
+        @Description("es indexName")
+        @Default.String("vehicle2")
         String getIndexName();
 
+        void setIndexName(String value);
+
+        @Description("es indexType")
+        @Default.String("realtime")
         String getIndexType();
+
+        void setIndexType(String value);
 
     }
 }

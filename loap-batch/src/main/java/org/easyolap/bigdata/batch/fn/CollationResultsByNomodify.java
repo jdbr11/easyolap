@@ -4,13 +4,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.beam.sdk.io.TextIO;
+import org.apache.beam.sdk.transforms.Count;
 import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.DoFn.ProcessContext;
-import org.apache.beam.sdk.transforms.DoFn.ProcessElement;
+import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PDone;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.client.Result;
@@ -19,19 +22,18 @@ import org.easyolap.bigdata.batch.bean.RecordData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CollationResultsByNomodify extends PTransform<PCollection<Result>, PCollection<KV<String, RecordData>>> {
-	 
+public class CollationResultsByNomodify
+        extends PTransform<PCollection<Result>, PCollection<KV<String, RecordData>>> {
+
     private static final long serialVersionUID = 5418981069895594397L;
 
     @Override
-	public PCollection<KV<String, RecordData>> expand(PCollection<Result> row) {
-		// result -> map(rowkey,data)
-		PCollection<KV<String,RecordData>> rowData = row.apply(ParDo.of(new Result2RecordNoModifyDataFn()));
-		
-
-		return rowData;
-	}
-	
+    public PCollection<KV<String, RecordData>> expand(PCollection<Result> row) {
+        // result -> map(rowkey,data)
+        PCollection<KV<String, RecordData>> rowDatas = row
+                .apply(ParDo.of(new Result2RecordNoModifyDataFn()));
+        return rowDatas;
+    }
     
     public class Result2RecordNoModifyDataFn extends DoFn<Result, KV<String, RecordData>> {
         private Logger logger = LoggerFactory.getLogger(Result2RecordNoModifyDataFn.class);
@@ -46,8 +48,9 @@ public class CollationResultsByNomodify extends PTransform<PCollection<Result>, 
             Map<String, String> cellsData = new HashMap<String, String>();
             for (Cell cell : cells) {
                 String qvualifier = toStr(CellUtil.cloneQualifier(cell));
+               
                 String value = toStr(CellUtil.cloneValue(cell));
-                // logger.info("qvualifier:" + qvualifier + " value:" + value);
+                logger.info("qvualifier:" + qvualifier + " value:" + value+"\t len:"+ cell.getValueLength());
                 cellsData.put(qvualifier, value);
             }
             if (cellsData != null && cellsData.size() > 0) {
@@ -59,7 +62,7 @@ public class CollationResultsByNomodify extends PTransform<PCollection<Result>, 
                 record.setVin(vin);
                 record.setSendingtime(sendingtime);
                 KV<String, RecordData> rowData = KV.of(vin, record);
-                logger.info("rowKey:" + rowKey + "\tdata:" + record);
+               // logger.info("rowKey:" + rowKey + "\tdata:" + record);
                 if (rowData != null) {
                     c.output(rowData);
                 }
@@ -71,4 +74,5 @@ public class CollationResultsByNomodify extends PTransform<PCollection<Result>, 
             return Bytes.toString(bt);
         }
     }
+
 }

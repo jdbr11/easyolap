@@ -1,4 +1,4 @@
-package org.easyloap.batch;
+package org.easyolap.batch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -93,11 +93,21 @@ public class Text2ElasticsearchPipeline {
                 logger.warn("Data deserialize error, data is null or sendingTime is null!");
                 return;
             }
-            for (int i = 0; i < 1000000; i++) {
+            for (int i = 0; i < 10000; i++) {
                 try {
 
                     XContentBuilder builder = jsonBuilder().startObject();
                     String vin = "";
+                    double lonDouble = new Random().nextInt(62) + new Random().nextDouble()+73;
+                    BigDecimal lonBigdecimal = new BigDecimal(lonDouble);
+                    
+                    double latDouble = new Random().nextInt(50) + new Random().nextDouble()+3;
+                    BigDecimal latBigdecimal = new BigDecimal(latDouble);
+                    
+                    double lon =lonBigdecimal.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue();//经度73-135
+                    double lat =latBigdecimal.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue();;//3-53
+                   
+                    
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
                         String key = entry.getKey();
                         if ("message".equals(key)) {
@@ -114,6 +124,7 @@ public class Text2ElasticsearchPipeline {
                             }
                         } else if ("vin".equalsIgnoreCase(key)) {
                             vin = (String) entry.getValue();
+                            builder.field(key, entry.getValue());
                         } else if ("SOC".equalsIgnoreCase(key)) {
                             double soc = new Random().nextInt(99) + new Random().nextDouble();
                             BigDecimal b = new BigDecimal(soc);
@@ -126,6 +137,10 @@ public class Text2ElasticsearchPipeline {
                             builder.field(key,
                                     b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                             logger.warn("mileage is :" + mileage);
+                        } else if ("longitude".equalsIgnoreCase(key)) {
+                            builder.field(key, lon);
+                        } else if ("latitude".equalsIgnoreCase(key)) {
+                            builder.field(key, lat);
                         } else {
                             builder.field(key, entry.getValue());
                         }
@@ -134,6 +149,8 @@ public class Text2ElasticsearchPipeline {
                     if (vin == null || vin.length() == 0) {
                         vin = (String) map.get("clientId");
                     }
+                    builder.startObject("location").field("lat", lat).field("lon", lon).endObject();
+                    
                     builder.endObject();
                     // String rowKey = vin + "-" + map.get("sendingTime");
                     int sendingTime = new Random().nextInt(89999) + 10000;

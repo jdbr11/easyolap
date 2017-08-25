@@ -70,3 +70,11 @@ add jar to hivelib ; example cp /usr/hdp/2.4.3.0-227/hive/bin/auxlib/*.jar /usr/
 
 hive Elasticsearch  Type conversion
 https://www.elastic.co/guide/en/elasticsearch/hadoop/current/hive.html
+
+
+1.elasticsearch geo建索引时需要静态定义类型为get_point
+2.range聚合
+range聚合为按照自定义的范围来创造桶，将每一个范围的数据进行聚合，并且这个聚合一般适用于字段类型为long或者int，double的字段，可以进行直接的聚合。
+3.daterange聚合
+date range聚合和range聚合类似，但是所使用的类型是datetime这种类型，使用的时候与range有些区别
+4.

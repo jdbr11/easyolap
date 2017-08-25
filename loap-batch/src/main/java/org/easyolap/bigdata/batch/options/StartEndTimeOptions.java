@@ -31,4 +31,8 @@ public interface StartEndTimeOptions extends PipelineOptions{
     String getIndexType();
 
     void setIndexType(String value);
+
+    @Description("Path of the file to write to")
+    String getOutput();
+    void setOutput(String value);
 }

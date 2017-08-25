@@ -16,7 +16,12 @@ mvn clean install -Dmaven.test.skip=true
 
 --打包编译
 mvn clean install assembly:assembly -Dmaven.test.skip=true -Pspark-runner
- 
+
+
+
+mvn exec:java -Dexec.mainClass=org.easyloap.batch.ReadHbase2ElasticsearchPipeline -Dexec.args="--runner=SparkRunner --startDatatime=2017-03-09_00:40:10 --endDatatime=2017-09-09_14:47:45" -Pspark-runner
+
+
 
 spark-submit --class path.to.your.Class --master yarn --deploy-mode cluster [options] <app jar> [app options]
 

@@ -1,4 +1,4 @@
-package org.easyloap.batch;
+package org.easyolap.batch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -12,12 +12,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.io.TextIO;
+import org.apache.beam.sdk.io.TextIO.Write;
 import org.apache.beam.sdk.io.hbase.HBaseIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.transforms.Count;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.DoFn.ProcessElement;
 import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.KV;
+import org.apache.beam.sdk.values.PCollection;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.filter.BinaryComparator;
@@ -61,15 +68,15 @@ public final class ReadHbase2ElasticsearchPipeline {
         conf.setStrings(HbaseConstant.C_ZOOKEEPER_ZNODE_PARENT,
                 HbaseConstant.getInstance().getZookeeperZnodeParent());
 
-        client = EsClient.getInstance().getTransportClient();
+        //client = EsClient.getInstance().getTransportClient();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 
-        String hbaseTable = "Message";
+        String hbaseTable = "2:RealtimeMessage";
 
         StartEndTimeOptions options = PipelineOptionsFactory.fromArgs(args).withValidation()
                 .as(StartEndTimeOptions.class);
 
-        String startSendingTime = "2017-02-03_17:44:47";
+        String startSendingTime = "2016-02-03_17:44:47";
         String endSendingTime = "2017-05-28_14:58:22";
         startSendingTime = options.getStartDatatime();
         endSendingTime = options.getEndDatatime();
@@ -101,8 +108,8 @@ public final class ReadHbase2ElasticsearchPipeline {
 
         String startRow = String.format("%s", startDate.getTime());
         String endRow = String.format("%s", endDate.getTime());
-        // startRow ="1495875235000";
-        // endRow="1495875245000";
+        startRow ="1489971972000";
+        endRow="1500512779000";
         logger.info("date time filter where is {},({}) to {},({})", startRow, df.format(startDate),
                 endRow, df.format(endDate));
 
@@ -125,13 +132,25 @@ public final class ReadHbase2ElasticsearchPipeline {
                 HBaseIO.read().withConfiguration(conf).withTableId(hbaseTable)
                         .withFilter(filterLists))
                 .apply(new CollationResultsByNomodify())
+                //.apply(ParDo.of(new ExtractWordsFn()))//PCollection<String>
+                // 计算记录数
+               // .apply(Count.<String>perElement())//PCollection<KV<String, Long>>
                 
+               // .apply(MapElements.via(new FormatAsTextFn()))
+                //.apply("WriteCounts",TextIO.Write.to(options.getOutput()));
                 //.apply(MapElements.via(new ElasticsearchIndexFn(options.getIndexName(),options.getIndexType())))
                 ;
 
         pipeline.run().waitUntilFinish();
         long endTime = System.currentTimeMillis();
         logger.info("Use Time:" + (endTime - starTime));
+    }
+
+    private static void apply(
+            PTransform<PCollection<String>, PCollection<KV<String, Long>>> perElement) {
+        
+        // TODO Auto-generated method stub
+        
     }
 
     public static class ElasticsearchIndexFn
@@ -169,8 +188,7 @@ public final class ReadHbase2ElasticsearchPipeline {
                         String _id = response.getId();
                         long _version = response.getVersion();
                         RestStatus status = response.status();
-                        logger.info("index:{},type:{}id:{}version:{}status:{}", _index, _type, _id,
-                                _version, status);
+                        //logger.info("index:{},type:{}id:{}version:{}status:{}", _index, _type, _id,_version, status);
                     } else {
                         logger.warn("response is null");
                     }
@@ -183,5 +201,18 @@ public final class ReadHbase2ElasticsearchPipeline {
             return rowKey;
         }
     }
-
+    public static class FormatAsTextFn extends SimpleFunction<KV<String, Long>, String> {
+        @Override
+        public String apply(KV<String, Long> input) {
+            logger.info(input.getKey() + "==:==" + input.getValue());
+            return input.getKey() + ": " + input.getValue();
+        }
+    }
+    static class ExtractWordsFn extends DoFn<KV<String, RecordData>, String> {
+        @ProcessElement
+        public void processElement(ProcessContext c) {
+            String data = c.element().getKey();
+            c.output(data);
+        }
+    }
 }

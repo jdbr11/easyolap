@@ -1,7 +1,7 @@
 /**
  * Project Name:elasticsearch-hadoop
  * File Name:EsClentTest.java
- * Package Name:com.reachauto.test
+ * Package Name:org.easyolap.test.search
  * Date:2017年5月23日下午12:15:27
  * Copyright (c) 2017, Neusoft All Rights Reserved.
  *
@@ -19,6 +19,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.index.query.GeoBoundingBoxQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHits;
@@ -52,7 +54,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EsClentSearch {
     private static Logger log = LoggerFactory.getLogger(EsClentSearch.class.getName());
-
+ 
     private static TransportClient client = null;
     private static String indexName;
     String typeField;
@@ -93,7 +95,7 @@ public class EsClentSearch {
 
             response = client.prepareSearch(indexName).get();
             // assertEquals(165589, response.getHits().getTotalHits());
-            System.out.println("testSearch1 耗时:" + response.getTookInMillis() + "\tHITS:"
+            log.info("testSearch1 耗时:" + response.getTookInMillis() + "\tHITS:"
                     + response.getHits().getTotalHits());
 
             SearchResponse detailedResponse = client.prepareSearch(indexName).setTypes(typeField)
@@ -101,15 +103,14 @@ public class EsClentSearch {
                     .setPostFilter(QueryBuilders.rangeQuery("soc1").from(20).to(30)).setFrom(0)
                     .setSize(60).get();
             logSearchResponse(detailedResponse);
-            System.out.println(
-                    "testSearch1 detailedResponse 耗时:" + detailedResponse.getTookInMillis());
+            log.info("testSearch1 detailedResponse 耗时:" + detailedResponse.getTookInMillis());
 
             assertEquals(0, detailedResponse.getHits().getTotalHits());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("testSearch1 use time(ms):" + (endTime - startTime));
+        log.info("testSearch1 use time(ms):" + (endTime - startTime));
     }
 
     // @Test
@@ -121,7 +122,7 @@ public class EsClentSearch {
                     .setQuery(QueryBuilders.termQuery("multi", "test")) // Query
                     .setPostFilter(QueryBuilders.rangeQuery("soc1").from(20).to(30)) // Filter
                     .setFrom(0).setSize(60).setExplain(true).get();
-            System.out.println("testSearch2 response 耗时:" + response.getTookInMillis());
+            log.info("testSearch2 response 耗时:" + response.getTookInMillis());
 
             logSearchResponse(response);
             assertEquals(0, response.getHits().getTotalHits());
@@ -130,7 +131,7 @@ public class EsClentSearch {
             log.error(e.getMessage(), e);
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("testSearch2 use time(ms):" + (endTime - startTime));
+        log.info("testSearch2 use time(ms):" + (endTime - startTime));
 
     }
 
@@ -163,14 +164,17 @@ public class EsClentSearch {
         long endTime = System.currentTimeMillis();
         log.info("testSearch3 use time(ms):" + (endTime - startTime));
     }
+
     @Test
     public void testAggregation() {
         long startTime = System.currentTimeMillis();
         try {
-            SearchRequestBuilder srb =  client.prepareSearch(indexName).setTypes(typeField);
+            SearchRequestBuilder srb = client.prepareSearch(indexName).setTypes(typeField);
             srb.setSearchType(SearchType.DEFAULT);
-            TermsAggregationBuilder gradeTermsBuilder = AggregationBuilders.terms("socAgg").field("soc");
-            TermsAggregationBuilder classTermsBuilder = AggregationBuilders.terms("mileageAgg").field("mileage");
+            TermsAggregationBuilder gradeTermsBuilder = AggregationBuilders.terms("socAgg")
+                    .field("soc");
+            TermsAggregationBuilder classTermsBuilder = AggregationBuilders.terms("mileageAgg")
+                    .field("mileage");
 
             gradeTermsBuilder.subAggregation(classTermsBuilder);
 
@@ -182,18 +186,18 @@ public class EsClentSearch {
 
             UnmappedTerms gradeTerms = (UnmappedTerms) aggMap.get("socAgg");
 
-            Iterator<Bucket> gradeBucketIt =  gradeTerms.getBuckets().iterator();
+            Iterator<Bucket> gradeBucketIt = gradeTerms.getBuckets().iterator();
 
             while (gradeBucketIt.hasNext()) {
                 Bucket gradeBucket = (Bucket) gradeBucketIt.next();
-                System.out
-                        .println(gradeBucket.getKey() + "soc有" + gradeBucket.getDocCount() + "个学生。");
+                System.out.println(
+                        gradeBucket.getKey() + "soc有" + gradeBucket.getDocCount() + "个学生。");
                 StringTerms classTerms = (StringTerms) gradeBucket.getAggregations().asMap()
                         .get("classAgg");
                 Iterator<Bucket> classBucketIt = classTerms.getBuckets().iterator();
                 while (classBucketIt.hasNext()) {
                     Bucket classBucket = classBucketIt.next();
-                    System.out.println(gradeBucket.getKey() + "电量" + classBucket.getKey() + "里程有"
+                    log.info(gradeBucket.getKey() + "电量" + classBucket.getKey() + "里程有"
                             + classBucket.getDocCount() + "个。");
                 }
             }
@@ -202,6 +206,26 @@ public class EsClentSearch {
         }
         long endTime = System.currentTimeMillis();
         log.info("testAggregation use time(ms):" + (endTime - startTime));
+    }
+
+    @Test
+    public void testGeo() {
+        long startTime = System.currentTimeMillis();
+        try {
+            GeoBoundingBoxQueryBuilder queryBuilder = QueryBuilders.geoBoundingBoxQuery("location");
+            GeoPoint topLeft = new GeoPoint(40.0, 117);
+            GeoPoint bottomRight = new GeoPoint(39.9, 116);
+            queryBuilder.setCorners(topLeft, bottomRight);
+            SearchResponse searchResponse = client.prepareSearch(indexName).setQuery(queryBuilder)
+                    .get();
+            System.out.println("testGeo::"+searchResponse);
+            System.err.println("testGeo hits::"+searchResponse.getHits().totalHits());
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        long endTime = System.currentTimeMillis();
+        log.info("testGeo use time(ms):" + (endTime - startTime));
     }
 
     private static void logSearchResponse(SearchResponse response) {
