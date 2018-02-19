@@ -1,5 +1,5 @@
 /**
- * Project Name:elasticsearch-hadoop
+ * Project Name: olap-core
  * File Name:EsClentTest.java
  * Package Name:org.easyolap.test.search
  * Date:2017年5月23日下午12:15:27
@@ -11,6 +11,8 @@ package org.easyolap.test.search;
 
 import static org.junit.Assert.assertEquals;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -59,7 +61,8 @@ public class EsClentSearch {
     private static String indexName;
     String typeField;
     private String id = "";
-
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    Date currentTime = new Date();
     @BeforeClass
     public static void setUpClass() {
         log.info("EsClentSearch @BeforeClass");
@@ -82,6 +85,11 @@ public class EsClentSearch {
 
     @AfterClass
     public static void after() {
+        try {
+            Thread.sleep(1000*5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (client != null)
             client.close();
     }
@@ -95,7 +103,7 @@ public class EsClentSearch {
 
             response = client.prepareSearch(indexName).get();
             // assertEquals(165589, response.getHits().getTotalHits());
-            log.info("testSearch1 耗时:" + response.getTookInMillis() + "\tHITS:"
+            System.out.println(formatter.format(currentTime) + "\ttestSearch1 耗时:" + response.getTookInMillis() + "\tHITS:"
                     + response.getHits().getTotalHits());
 
             SearchResponse detailedResponse = client.prepareSearch(indexName).setTypes(typeField)
@@ -103,7 +111,7 @@ public class EsClentSearch {
                     .setPostFilter(QueryBuilders.rangeQuery("soc1").from(20).to(30)).setFrom(0)
                     .setSize(60).get();
             logSearchResponse(detailedResponse);
-            log.info("testSearch1 detailedResponse 耗时:" + detailedResponse.getTookInMillis());
+            System.out.println(formatter.format(currentTime) + "\ttestSearch1 detailedResponse 耗时:" + detailedResponse.getTookInMillis());
 
             assertEquals(0, detailedResponse.getHits().getTotalHits());
         } catch (Exception e) {
@@ -157,12 +165,15 @@ public class EsClentSearch {
             SearchResponse response = builder.get();
             log.info("testSearch3 response 耗时:(" + queryItem + ")" + response.getTookInMillis()
                     + "\tHITS:" + response.getHits().totalHits());
+            System.out.println(formatter.format(currentTime) +"testSearch3 response 耗时:(" + queryItem + ")" + response.getTookInMillis()
+            + "\tHITS:" + response.getHits().totalHits());
             logSearchResponse(response);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         long endTime = System.currentTimeMillis();
         log.info("testSearch3 use time(ms):" + (endTime - startTime));
+        System.out.println(formatter.format(currentTime) +"testSearch3 use time(ms):" + (endTime - startTime));
     }
 
     @Test
@@ -226,6 +237,7 @@ public class EsClentSearch {
         }
         long endTime = System.currentTimeMillis();
         log.info("testGeo use time(ms):" + (endTime - startTime));
+        System.out.println("testGeo use time(ms):" + (endTime - startTime));
     }
 
     private static void logSearchResponse(SearchResponse response) {

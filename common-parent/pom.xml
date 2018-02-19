@@ -34,6 +34,10 @@
 		<akka.version>2.2.3</akka.version>
 
 		<jackson.version>2.8.8</jackson.version>
+		
+		<checkstyle.version>2.12</checkstyle.version>
+    <checkstyle.tools.version>7.0</checkstyle.tools.version>
+    <checkstyle.exclusions>**/gen/**, ^target/generated-sources, **/org/easyolap/**</checkstyle.exclusions>
 
 	</properties>
 
@@ -742,6 +746,33 @@
 						</additionalConfig>
 					</configuration>
 				</plugin>
+				<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${checkstyle.tools.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>../common-parent/tools/ali_checksytle-simple.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <excludes>${checkstyle.exclusions}</excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

@@ -48,6 +48,10 @@
 		<logger name="org.easyolap" level="info">
 			<AppenderRef ref="search"/>
 		</logger>
+		
+		<logger name="org.easyolap.test" level="debug">
+			<AppenderRef ref="stdout"/>
+		</logger>
 		 
         <Root level="all">
             <AppenderRef ref="async"/>

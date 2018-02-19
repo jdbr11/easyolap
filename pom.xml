@@ -41,9 +41,9 @@
 
 	<modules>
 		<module>common-utils</module>
-		<module>loap-core</module>
-		<module>loap-batch</module>
-		<module>loap-rest-api</module>
+		<module>olap-core</module>
+		<module>olap-batch</module>
+		<module>olap-rest-api</module>
 	</modules>
 
 
